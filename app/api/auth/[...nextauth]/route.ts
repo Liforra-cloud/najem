@@ -5,7 +5,7 @@ import EmailProvider from 'next-auth/providers/email';
 import { PrismaAdapter } from '@next-auth/prisma-adapter';
 import { prisma } from '../../../../lib/prisma';
 
-const handler = NextAuth({
+export const authOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
     EmailProvider({
@@ -19,7 +19,6 @@ const handler = NextAuth({
   },
   callbacks: {
     async session({ session, user }) {
-      // user.id je string, ale Prisma potřebuje number → parseInt
       const dbUser = await prisma.user.findUnique({
         where: { id: parseInt(user.id, 10) },
         select: { role: true },
@@ -34,6 +33,8 @@ const handler = NextAuth({
       };
     },
   },
-});
+};
+
+const handler = NextAuth(authOptions);
 
 export { handler as GET, handler as POST };
