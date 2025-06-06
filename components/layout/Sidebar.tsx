@@ -1,7 +1,9 @@
 // components/layout/Sidebar.tsx
 
+'use client';
+
 import Link from 'next/link';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 
 const navItems = [
@@ -20,7 +22,6 @@ export default function Sidebar() {
   const { data: session } = useSession();
   const router = useRouter();
 
-  // Pokud není session, neukazujeme nic (layout aplikace chrání ProtectedRoute)
   if (!session) return null;
 
   return (

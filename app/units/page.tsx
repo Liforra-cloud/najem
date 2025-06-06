@@ -3,9 +3,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Unit & { property: { name: string } } } from '@prisma/client';
+import { Unit } from '@prisma/client';
 import { useRouter } from 'next/navigation';
 
+// Definujeme vlastní typ, který přidá jméno property
 interface UnitWithProperty extends Unit {
   property: { name: string };
 }
@@ -16,7 +17,7 @@ export default function UnitsPage() {
 
   const fetchUnits = async () => {
     const res = await fetch('/api/units');
-    const data = await res.json();
+    const data: UnitWithProperty[] = await res.json();
     setUnits(data);
   };
 
@@ -54,7 +55,6 @@ export default function UnitsPage() {
               <td className="p-3">{unit.size}</td>
               <td className="p-3">{unit.floor}</td>
               <td className="p-3">
-                {/* V budoucnu: Edit / Delete */}
                 <button
                   onClick={() => router.push(`/properties/${unit.propertyId}`)}
                   className="text-blue-600 hover:underline"
