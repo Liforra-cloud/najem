@@ -1,29 +1,30 @@
 // app/layout.tsx
 
-import '../styles/globals.css';
-import { SessionProvider } from 'next-auth/react';
-import { ReactNode } from 'react';
-import ProtectedRoute from '../components/auth/ProtectedRoute';
-import Layout from '../components/layout/Layout';
+import './globals.css';
+import AuthProvider from '../components/providers/AuthProvider';
+import Sidebar from '../components/layout/Sidebar';
 
 export const metadata = {
   title: 'Správa nájmů',
   description: 'Aplikace pro správu nemovitostí a nájmů',
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="cs">
       <body>
-        <SessionProvider>
-          {/* ProtectedRoute zabalí celý obsah a zajistí, že uživatel je přihlášen */}
-          <ProtectedRoute>
-            {/* Layout vykreslí Sidebar a hlavní obsah */}
-            <Layout>{children}</Layout>
-          </ProtectedRoute>
-        </SessionProvider>
+        {/* Přesunuli jsme SessionProvider do klientské složky */}
+        <AuthProvider>
+          <div className="flex">
+            <Sidebar />
+            <main className="flex-1 p-6">{children}</main>
+          </div>
+        </AuthProvider>
       </body>
     </html>
   );
 }
-
