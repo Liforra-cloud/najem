@@ -1,40 +1,27 @@
 // app/units/page.tsx
 
-'use client';
+import { prisma } from "../../lib/prisma";
 
-import { useEffect, useState } from 'react';
-import { Unit } from '@prisma/client';
-import { useRouter } from 'next/navigation';
-
-// Definujeme vlastní typ, který přidá jméno property
-interface UnitWithProperty extends Unit {
-  property: { name: string };
-}
-
-export default function UnitsPage() {
-  const [units, setUnits] = useState<UnitWithProperty[]>([]);
-  const router = useRouter();
-
-  const fetchUnits = async () => {
-    const res = await fetch('/api/units');
-    const data: UnitWithProperty[] = await res.json();
-    setUnits(data);
-  };
-
-  useEffect(() => {
-    fetchUnits();
-  }, []);
+export default async function UnitsPage() {
+  // Načteme všechny jednotky včetně názvu jejich nemovitosti
+  const units = await prisma.unit.findMany({
+    include: {
+      property: {
+        select: { name: true },
+      },
+    },
+  });
 
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Jednotky</h1>
-        <button
-          onClick={() => router.push('/units/create')}
+        <a
+          href="/units/create"
           className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
         >
           Přidat jednotku
-        </button>
+        </a>
       </div>
 
       <table className="w-full bg-white rounded shadow">
@@ -55,12 +42,12 @@ export default function UnitsPage() {
               <td className="p-3">{unit.size}</td>
               <td className="p-3">{unit.floor}</td>
               <td className="p-3">
-                <button
-                  onClick={() => router.push(`/properties/${unit.propertyId}`)}
+                <a
+                  href={`/properties/${unit.propertyId}`}
                   className="text-blue-600 hover:underline"
                 >
                   Detail nemovitosti
-                </button>
+                </a>
               </td>
             </tr>
           ))}
