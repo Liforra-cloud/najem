@@ -1,21 +1,21 @@
-// app/api/units/route.ts
+// app/api/units/[id]/route.ts
 
 import { NextResponse } from 'next/server';
+// Soubor v /app/api/units/[id]/route.ts → lib/prisma na úrovni kořene dosáhnete relativně takto:
 import { prisma } from '../../../lib/prisma';
 
-// GET /api/units – vrátí všechny jednotky (včetně názvu nemovitosti)
-export async function GET() {
-  const units = await prisma.unit.findMany({
-    include: { property: { select: { name: true } } },
-  });
-  return NextResponse.json(units);
+interface Params {
+  params: { id: string };
 }
 
-// POST /api/units – vytvoří novou jednotku
-export async function POST(request: Request) {
-  const { name, size, floor, propertyId } = await request.json();
-  const newUnit = await prisma.unit.create({
-    data: { name, size, floor, propertyId },
+export async function GET(request: Request, { params }: Params) {
+  const id = parseInt(params.id, 10);
+  const unit = await prisma.unit.findUnique({
+    where: { id },
+    include: { property: true },
   });
-  return NextResponse.json(newUnit);
+  if (!unit) {
+    return new NextResponse('Not found', { status: 404 });
+  }
+  return NextResponse.json(unit);
 }
