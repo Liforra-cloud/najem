@@ -2,7 +2,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 interface UnitOption {
@@ -21,11 +21,10 @@ export default function CreateMaintenancePage() {
   });
   const router = useRouter();
 
-  // Načtení jednotek pro výběr
   const fetchUnits = async () => {
-    const res = await fetch('/api/units');
+    const origin = window.location.origin;
+    const res = await fetch(`${origin}/api/units`);
     const data = await res.json();
-    // data je pole jednotek včetně property
     setUnits(
       data.map((u: any) => ({
         id: u.id,
@@ -35,14 +34,14 @@ export default function CreateMaintenancePage() {
     );
   };
 
-  // Načíst jednotky při mountu
-  useState(() => {
+  useEffect(() => {
     fetchUnits();
-  });
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await fetch('/api/maintenance', {
+    const origin = window.location.origin;
+    await fetch(`${origin}/api/maintenance`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
