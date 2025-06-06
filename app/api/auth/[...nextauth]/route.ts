@@ -19,16 +19,16 @@ const handler = NextAuth({
   },
   callbacks: {
     async session({ session, user }) {
-      // Získáme role přímo z databáze, protože `user.role` není dostupné z AdapterUser
+      // user.id je string, ale Prisma potřebuje number → parseInt
       const dbUser = await prisma.user.findUnique({
-        where: { id: user.id },
+        where: { id: parseInt(user.id, 10) },
         select: { role: true },
       });
       return {
         ...session,
         user: {
           ...session.user!,
-          id: user.id,
+          id: parseInt(user.id, 10),
           role: dbUser?.role || 'MANAGER',
         },
       };
