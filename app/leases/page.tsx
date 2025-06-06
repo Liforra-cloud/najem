@@ -3,26 +3,23 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Lease & { tenant: { name: string }; unit: { name: string; property: { name: string } } } } from '@prisma/client';
-import { useRouter } from 'next/navigation';
 
-interface LeaseWithRelations extends Lease {
+interface LeaseWithRelations {
+  id: number;
+  startDate: string;
+  endDate: string;
+  rent: number;
   tenant: { name: string };
   unit: { name: string; property: { name: string } };
 }
 
 export default function LeasesPage() {
   const [leases, setLeases] = useState<LeaseWithRelations[]>([]);
-  const router = useRouter();
-
-  const fetchLeases = async () => {
-    const res = await fetch('/api/leases');
-    const data: LeaseWithRelations[] = await res.json();
-    setLeases(data);
-  };
 
   useEffect(() => {
-    fetchLeases();
+    fetch('/api/leases')
+      .then((res) => res.json())
+      .then((data: LeaseWithRelations[]) => setLeases(data));
   }, []);
 
   return (
@@ -30,7 +27,7 @@ export default function LeasesPage() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Smlouvy</h1>
         <button
-          onClick={() => router.push('/leases/create')}
+          onClick={() => (window.location.href = '/leases/create')}
           className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
         >
           Přidat smlouvu
@@ -60,7 +57,7 @@ export default function LeasesPage() {
               <td className="p-3">{lease.rent}</td>
               <td className="p-3">
                 <button
-                  onClick={() => router.push(`/leases/${lease.id}`)}
+                  onClick={() => (window.location.href = `/leases/${lease.id}`)}
                   className="text-blue-600 hover:underline"
                 >
                   Detail
@@ -73,3 +70,4 @@ export default function LeasesPage() {
     </div>
   );
 }
+

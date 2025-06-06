@@ -1,38 +1,44 @@
 // app/properties/[id]/page.tsx
 
-import { prisma } from '../../../lib/prisma';
-import { Unit, Property } from '@prisma/client';
-import { notFound } from 'next/navigation';
-import { useState } from 'react';
+'use client';
 
-interface PageProps {
-  params: { id: string };
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+
+interface Unit {
+  id: number;
+  name: string;
+  size: string;
+  floor: number;
 }
 
-export default async function PropertyDetailPage({ params }: PageProps) {
-  const propertyId = parseInt(params.id, 10);
-
-  // Načteme detail nemovitosti včetně jednotek
-  const property = await prisma.property.findUnique({
-    where: { id: propertyId },
-    include: { units: true },
-  });
-
-  if (!property) return notFound();
-
-  return <PropertyDetail property={property} />;
+interface PropertyDetail {
+  id: number;
+  name: string;
+  address: string;
+  units: Unit[];
 }
 
-function PropertyDetail({ property }: { property: Property & { units: Unit[] } }) {
-  const [units, setUnits] = useState<Unit[]>(property.units);
+export default function PropertyDetailPage() {
+  const [property, setProperty] = useState<PropertyDetail | null>(null);
   const [unitName, setUnitName] = useState('');
   const [unitSize, setUnitSize] = useState('');
   const [unitFloor, setUnitFloor] = useState('');
+  const searchParams = useSearchParams();
+  const idParam = searchParams.get('id') || '';
+  const propertyId = parseInt(idParam, 10);
 
-  // Odeslat novou jednotku
+  useEffect(() => {
+    if (!propertyId) return;
+    fetch(`/api/properties/${propertyId}`)
+      .then((res) => res.json())
+      .then((data: PropertyDetail) => setProperty(data));
+  }, [propertyId]);
+
   const addUnit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const res = await fetch(`/api/units`, {
+    if (!property) return;
+    const res = await fetch('/api/units', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -42,29 +48,31 @@ function PropertyDetail({ property }: { property: Property & { units: Unit[] } }
         propertyId: property.id,
       }),
     });
-    const newUnit = await res.json();
-    setUnits([...units, newUnit]);
+    const newUnit: Unit = await res.json();
+    setProperty({ ...property, units: [...property.units, newUnit] });
     setUnitName('');
     setUnitSize('');
     setUnitFloor('');
   };
+
+  if (!property) {
+    return <div className="flex items-center justify-center h-screen">Načítám…</div>;
+  }
 
   return (
     <div>
       <h1 className="text-3xl font-bold mb-4">{property.name}</h1>
       <p className="mb-6 text-gray-700">{property.address}</p>
 
-      {/* Seznam jednotek */}
       <h2 className="text-2xl font-semibold mb-2">Jednotky</h2>
       <ul className="mb-6 space-y-2">
-        {units.map((unit) => (
+        {property.units.map((unit) => (
           <li key={unit.id} className="bg-white p-3 rounded shadow">
             {unit.name} ({unit.size}, patro {unit.floor})
           </li>
         ))}
       </ul>
 
-      {/* Formulář pro přidání nové jednotky */}
       <form onSubmit={addUnit} className="bg-gray-50 p-4 rounded shadow w-full max-w-md">
         <h3 className="text-xl font-semibold mb-3">Přidat jednotku</h3>
         <input

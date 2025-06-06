@@ -1,71 +1,88 @@
 // app/leases/[id]/page.tsx
 
-import { prisma } from '../../../lib/prisma';
-import { Lease, Payment, Invoice } from '@prisma/client';
-import { notFound } from 'next/navigation';
-import { useState } from 'react';
+'use client';
 
-interface PageProps {
-  params: { id: string };
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+
+interface Payment {
+  id: number;
+  amount: number;
+  dueDate: string;
+  status: string;
 }
 
-export default async function LeaseDetailPage({ params }: PageProps) {
-  const leaseId = parseInt(params.id, 10);
-
-  // Načteme detail smlouvy včetně nájemníka, jednotky, plateb a faktur
-  const lease = await prisma.lease.findUnique({
-    where: { id: leaseId },
-    include: {
-      tenant: true,
-      unit: { include: { property: true } },
-      payments: true,
-      invoices: true,
-    },
-  });
-  if (!lease) return notFound();
-
-  return <LeaseDetail lease={lease} />;
+interface Invoice {
+  id: number;
+  amount: number;
+  issuedAt: string;
 }
 
-function LeaseDetail({ lease }: { lease: Lease & { payments: Payment[]; invoices: Invoice[] } }) {
-  const [payments, setPayments] = useState<Payment[]>(lease.payments);
-  const [invoices, setInvoices] = useState<Invoice[]>(lease.invoices);
+interface LeaseDetail {
+  id: number;
+  startDate: string;
+  endDate: string;
+  rent: number;
+  tenant: { name: string };
+  unit: { name: string; property: { name: string } };
+  payments: Payment[];
+  invoices: Invoice[];
+}
+
+export default function LeaseDetailPage() {
+  const [lease, setLease] = useState<LeaseDetail | null>(null);
   const [paymentAmount, setPaymentAmount] = useState('');
   const [paymentDue, setPaymentDue] = useState('');
   const [invoiceAmount, setInvoiceAmount] = useState('');
+  const searchParams = useSearchParams();
+  const idParam = searchParams.get('id') || '';
+  const leaseId = parseInt(idParam, 10);
+
+  useEffect(() => {
+    if (!leaseId) return;
+    fetch(`/api/leases/${leaseId}`)
+      .then((res) => res.json())
+      .then((data: LeaseDetail) => setLease(data));
+  }, [leaseId]);
 
   const addPayment = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!lease) return;
     const res = await fetch('/api/payments', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         leaseId: lease.id,
-        amount: parseInt(paymentAmount, 10),
+        amount: Number(paymentAmount),
         dueDate: paymentDue,
         status: 'UNPAID',
       }),
     });
     const newPayment = await res.json();
-    setPayments([...payments, newPayment]);
+    setLease({ ...lease, payments: [...lease.payments, newPayment] });
     setPaymentAmount('');
     setPaymentDue('');
   };
 
   const addInvoice = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!lease) return;
     const res = await fetch('/api/invoices', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         leaseId: lease.id,
-        amount: parseInt(invoiceAmount, 10),
+        amount: Number(invoiceAmount),
       }),
     });
     const newInvoice = await res.json();
-    setInvoices([...invoices, newInvoice]);
+    setLease({ ...lease, invoices: [...lease.invoices, newInvoice] });
     setInvoiceAmount('');
   };
+
+  if (!lease) {
+    return <div className="flex items-center justify-center h-screen">Načítám…</div>;
+  }
 
   return (
     <div>
@@ -75,16 +92,19 @@ function LeaseDetail({ lease }: { lease: Lease & { payments: Payment[]; invoices
         Jednotka: {lease.unit.name} ({lease.unit.property.name})
       </p>
       <p className="mb-2">
-        Období: {new Date(lease.startDate).toLocaleDateString()} – {new Date(lease.endDate).toLocaleDateString()}
+        Období:{' '}
+        {new Date(lease.startDate).toLocaleDateString()} –{' '}
+        {new Date(lease.endDate).toLocaleDateString()}
       </p>
       <p className="mb-6">Nájem: {lease.rent} CZK</p>
 
-      {/* Seznam plateb */}
       <h2 className="text-2xl font-semibold mb-2">Platby</h2>
       <ul className="mb-4 space-y-2">
-        {payments.map((p) => (
+        {lease.payments.map((p) => (
           <li key={p.id} className="bg-white p-3 rounded shadow flex justify-between">
-            <span>{new Date(p.dueDate).toLocaleDateString()} – {p.amount} CZK</span>
+            <span>
+              {new Date(p.dueDate).toLocaleDateString()} – {p.amount} CZK
+            </span>
             <span className={p.status === 'PAID' ? 'text-green-600' : 'text-red-600'}>
               {p.status}
             </span>
@@ -116,16 +136,14 @@ function LeaseDetail({ lease }: { lease: Lease & { payments: Payment[]; invoices
         </button>
       </form>
 
-      {/* Seznam faktur */}
       <h2 className="text-2xl font-semibold mb-2">Faktury</h2>
       <ul className="mb-4 space-y-2">
-        {invoices.map((inv) => (
+        {lease.invoices.map((inv) => (
           <li key={inv.id} className="bg-white p-3 rounded shadow flex justify-between">
-            <span>{new Date(inv.issuedAt).toLocaleDateString()} – {inv.amount} CZK</span>
-            <a
-              href={`/api/invoices/${inv.id}`} // V budoucnu lze vygenerovat PDF
-              className="text-blue-600 hover:underline"
-            >
+            <span>
+              {new Date(inv.issuedAt).toLocaleDateString()} – {inv.amount} CZK
+            </span>
+            <a href={`/api/invoices/${inv.id}`} className="text-blue-600 hover:underline">
               Stáhnout
             </a>
           </li>
