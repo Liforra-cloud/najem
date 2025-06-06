@@ -1,14 +1,21 @@
 // app/units/page.tsx
 
 import { prisma } from "../../lib/prisma";
+import Link from "next/link";
 
 export default async function UnitsPage() {
-  // Načteme všechny jednotky včetně názvu jejich nemovitosti
+  // Načteme všechny jednotky včetně názvu nemovitosti
   const units = await prisma.unit.findMany({
     include: {
       property: {
-        select: { name: true },
+        select: {
+          id: true,
+          name: true,
+        },
       },
+    },
+    orderBy: {
+      name: "asc",
     },
   });
 
@@ -16,12 +23,12 @@ export default async function UnitsPage() {
     <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Jednotky</h1>
-        <a
+        <Link
           href="/units/create"
           className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
         >
           Přidat jednotku
-        </a>
+        </Link>
       </div>
 
       <table className="w-full bg-white rounded shadow">
@@ -42,12 +49,12 @@ export default async function UnitsPage() {
               <td className="p-3">{unit.size}</td>
               <td className="p-3">{unit.floor}</td>
               <td className="p-3">
-                <a
-                  href={`/properties/${unit.propertyId}`}
+                <Link
+                  href={`/properties/${unit.property.id}`}
                   className="text-blue-600 hover:underline"
                 >
                   Detail nemovitosti
-                </a>
+                </Link>
               </td>
             </tr>
           ))}
