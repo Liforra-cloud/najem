@@ -1,7 +1,7 @@
 // app/api/maintenance/route.ts
 
 import { NextResponse } from 'next/server';
-import { prisma } from '../../../../lib/prisma';
+import { prisma } from '../../../lib/prisma';
 
 // GET /api/maintenance – vrátí všechny hlášené závady (včetně jména jednotky)
 export async function GET() {

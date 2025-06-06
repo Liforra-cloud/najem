@@ -1,7 +1,7 @@
 // app/api/properties/[id]/route.ts
 
 import { NextResponse } from 'next/server';
-import { prisma } from '../../../../../lib/prisma';
+import { prisma } from '../../../../lib/prisma';
 
 interface Params {
   params: { id: string };

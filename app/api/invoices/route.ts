@@ -1,7 +1,7 @@
 // app/api/invoices/route.ts
 
 import { NextResponse } from 'next/server';
-import { prisma } from '../../../../lib/prisma';
+import { prisma } from '../../../lib/prisma';
 
 // GET /api/invoices – vrátí všechny faktury (včetně jména nájemníka a jednotky)
 export async function GET() {

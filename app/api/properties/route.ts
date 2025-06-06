@@ -1,7 +1,7 @@
 // app/api/properties/route.ts
 
 import { NextResponse } from 'next/server';
-import { prisma } from '../../../../lib/prisma';
+import { prisma } from '../../../lib/prisma';
 
 // GET /api/properties  – vrátí všechny nemovitosti
 export async function GET() {

@@ -1,7 +1,7 @@
 // app/api/payments/route.ts
 
 import { NextResponse } from 'next/server';
-import { prisma } from '../../../../lib/prisma';
+import { prisma } from '../../../lib/prisma';
 
 // GET /api/payments – vrátí všechny platby (včetně jména nájemníka a jednotky)
 export async function GET() {

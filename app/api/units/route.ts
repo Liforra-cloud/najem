@@ -1,7 +1,7 @@
 // app/api/units/route.ts
 
 import { NextResponse } from 'next/server';
-import { prisma } from '../../../../lib/prisma';
+import { prisma } from '../../../lib/prisma';
 
 // GET /api/units – vrátí všechny jednotky (včetně názvu nemovitosti)
 export async function GET() {

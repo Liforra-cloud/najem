@@ -1,7 +1,7 @@
 // app/api/tenants/route.ts
 
 import { NextResponse } from 'next/server';
-import { prisma } from '../../../../lib/prisma';
+import { prisma } from '../../../lib/prisma';
 
 // GET /api/tenants – vrátí všechny nájemníky
 export async function GET() {
