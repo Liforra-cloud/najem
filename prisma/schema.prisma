@@ -9,27 +9,11 @@ generator client {
   provider = "prisma-client-js"
 }
 
-enum Role {
-  OWNER
-  MANAGER
-  ACCOUNTANT
-}
-
-enum PaymentStatus {
-  PAID
-  UNPAID
-}
-
-enum MaintenanceStatus {
-  OPEN
-  RESOLVED
-}
-
 model User {
   id             Int        @id @default(autoincrement())
   name           String
   email          String     @unique
-  role           Role
+  role           String
   hashedPassword String?
   properties     Property[]
   sessions       Session[]
@@ -77,12 +61,12 @@ model Lease {
 }
 
 model Payment {
-  id       Int           @id @default(autoincrement())
+  id       Int      @id @default(autoincrement())
   leaseId  Int
   amount   Int
   dueDate  DateTime
-  status   PaymentStatus
-  lease    Lease         @relation(fields: [leaseId], references: [id])
+  status   String
+  lease    Lease    @relation(fields: [leaseId], references: [id])
 }
 
 model Invoice {
@@ -95,13 +79,13 @@ model Invoice {
 }
 
 model Maintenance {
-  id          Int               @id @default(autoincrement())
+  id          Int      @id @default(autoincrement())
   unitId      Int
   description String
   reportedBy  String
-  status      MaintenanceStatus @default(OPEN)
-  createdAt   DateTime          @default(now())
-  unit        Unit              @relation(fields: [unitId], references: [id])
+  status      String   @default("OPEN")
+  createdAt   DateTime @default(now())
+  unit        Unit     @relation(fields: [unitId], references: [id])
 }
 
 model Session {
@@ -135,3 +119,4 @@ model VerificationToken {
   expires    DateTime
   @@unique([identifier, token])
 }
+
