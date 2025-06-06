@@ -18,13 +18,17 @@ const handler = NextAuth({
     strategy: 'database',
   },
   callbacks: {
+    // Rozšíříme session.user o id a role; musíme obcházet kontrolu typů
     async session({ session, user }) {
-      session.user = {
-        ...session.user!,
-        id: user.id,
-        role: user.role as string,
+      return {
+        ...session,
+        user: {
+          ...session.user,
+          // 'as any' obchází kontrolu, aby se TS nebránil přidání id a role
+          id: user.id,
+          role: user.role as string,
+        } as any,
       };
-      return session;
     },
   },
 });
