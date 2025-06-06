@@ -16,9 +16,9 @@ export default function PropertiesPage() {
   const [form, setForm] = useState<PropertyForm>({ name: '', address: '' });
   const router = useRouter();
 
-  // Načtení existujících nemovitostí
   const fetchProperties = async () => {
-    const res = await fetch('/api/properties');
+    const origin = window.location.origin;
+    const res = await fetch(`${origin}/api/properties`);
     const data = await res.json();
     setProperties(data);
   };
@@ -27,10 +27,10 @@ export default function PropertiesPage() {
     fetchProperties();
   }, []);
 
-  // Odeslání nové nemovitosti
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await fetch('/api/properties', {
+    const origin = window.location.origin;
+    await fetch(`${origin}/api/properties`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(form),
@@ -43,7 +43,6 @@ export default function PropertiesPage() {
     <div>
       <h1 className="text-3xl font-bold mb-6">Nemovitosti</h1>
 
-      {/* Formulář pro přidání nové nemovitosti */}
       <form onSubmit={handleSubmit} className="mb-6 flex gap-4">
         <input
           type="text"
@@ -69,7 +68,6 @@ export default function PropertiesPage() {
         </button>
       </form>
 
-      {/* Tabulka existujících nemovitostí */}
       <table className="w-full bg-white rounded shadow">
         <thead className="bg-gray-100">
           <tr>
@@ -90,7 +88,6 @@ export default function PropertiesPage() {
                 >
                   Detail
                 </button>
-                {/* Edit a Delete lze přidat později */}
               </td>
             </tr>
           ))}
