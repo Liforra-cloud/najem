@@ -18,16 +18,19 @@ const handler = NextAuth({
     strategy: 'database',
   },
   callbacks: {
-    // Rozšíříme session.user o id a role; musíme obcházet kontrolu typů
     async session({ session, user }) {
+      // Získáme role přímo z databáze, protože `user.role` není dostupné z AdapterUser
+      const dbUser = await prisma.user.findUnique({
+        where: { id: user.id },
+        select: { role: true },
+      });
       return {
         ...session,
         user: {
-          ...session.user,
-          // 'as any' obchází kontrolu, aby se TS nebránil přidání id a role
+          ...session.user!,
           id: user.id,
-          role: user.role as string,
-        } as any,
+          role: dbUser?.role || 'MANAGER',
+        },
       };
     },
   },
