@@ -22,7 +22,8 @@ export default function CreateUnitPage() {
   const router = useRouter();
 
   const fetchProperties = async () => {
-    const res = await fetch('/api/properties');
+    const origin = window.location.origin;
+    const res = await fetch(`${origin}/api/properties`);
     const data: Property[] = await res.json();
     setProperties(data.map((p) => ({ id: p.id, name: p.name })));
   };
@@ -33,7 +34,8 @@ export default function CreateUnitPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await fetch('/api/units', {
+    const origin = window.location.origin;
+    await fetch(`${origin}/api/units`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
