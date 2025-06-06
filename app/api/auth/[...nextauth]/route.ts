@@ -5,7 +5,7 @@ import EmailProvider from 'next-auth/providers/email';
 import { PrismaAdapter } from '@next-auth/prisma-adapter';
 import { prisma } from '../../../../lib/prisma';
 
-export const authOptions = {
+const handler = NextAuth({
   adapter: PrismaAdapter(prisma),
   providers: [
     EmailProvider({
@@ -15,21 +15,18 @@ export const authOptions = {
   ],
   secret: process.env.NEXTAUTH_SECRET,
   session: {
-    strategy: 'database', // ukládání session v DB
+    strategy: 'database',
   },
   callbacks: {
     async session({ session, user }) {
-      // Přidáme do session také role uživatele, uloženou v DB
       session.user = {
-        ...session.user,
+        ...session.user!,
         id: user.id,
         role: user.role as string,
       };
       return session;
     },
   },
-};
-
-const handler = NextAuth(authOptions);
+});
 
 export { handler as GET, handler as POST };
