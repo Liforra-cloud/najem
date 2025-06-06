@@ -30,7 +30,8 @@ export default function PropertyDetailPage() {
 
   useEffect(() => {
     if (!propertyId) return;
-    fetch(`/api/properties/${propertyId}`)
+    const origin = window.location.origin;
+    fetch(`${origin}/api/properties/${propertyId}`)
       .then((res) => res.json())
       .then((data: PropertyDetail) => setProperty(data));
   }, [propertyId]);
@@ -38,7 +39,8 @@ export default function PropertyDetailPage() {
   const addUnit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!property) return;
-    const res = await fetch('/api/units', {
+    const origin = window.location.origin;
+    const res = await fetch(`${origin}/api/units`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
