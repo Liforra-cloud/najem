@@ -1,22 +1,12 @@
 // app/units/page.tsx
-
+export const dynamic = "force-dynamic";
 import { prisma } from "../../lib/prisma";
 import Link from "next/link";
 
 export default async function UnitsPage() {
-  // Načteme všechny jednotky včetně názvu nemovitosti
   const units = await prisma.unit.findMany({
-    include: {
-      property: {
-        select: {
-          id: true,
-          name: true,
-        },
-      },
-    },
-    orderBy: {
-      name: "asc",
-    },
+    include: { property: { select: { id: true, name: true } } },
+    orderBy: { name: "asc" },
   });
 
   return (
