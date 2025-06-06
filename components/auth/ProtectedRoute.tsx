@@ -26,7 +26,8 @@ export default function ProtectedRoute({ children, requiredRole }: ProtectedRout
     }
 
     // Jestliže je vyžadována konkrétní role a uživatel ji nemá, přesměrujeme na /unauthorized
-    if (requiredRole && session.user.role !== requiredRole) {
+   if (requiredRole && (session.user as any).role !== requiredRole) {
+
       router.push('/unauthorized');
     }
   }, [session, status, router, requiredRole]);
