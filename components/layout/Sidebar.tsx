@@ -1,9 +1,8 @@
-// components/layout/Sidebar.tsx
-
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+-import { useRouter } from 'next/navigation';
++import { usePathname } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 
 const navItems = [
@@ -20,7 +19,8 @@ const navItems = [
 
 export default function Sidebar() {
   const { data: session } = useSession();
-  const router = useRouter();
+- const router = useRouter();
++ const pathname = usePathname();
 
   if (!session) return null;
 
@@ -37,7 +37,8 @@ export default function Sidebar() {
               <Link href={item.href}>
                 <a
                   className={`block px-3 py-2 rounded ${
-                    router.pathname === item.href
+-                    router.pathname === item.href
++                    pathname === item.href
                       ? 'bg-blue-500 text-white'
                       : 'text-gray-700 hover:bg-gray-200'
                   }`}
