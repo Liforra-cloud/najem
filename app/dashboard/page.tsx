@@ -2,7 +2,7 @@
 
 import { prisma } from '../../lib/prisma';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '../api/auth/[...nextauth]/route';
+import { authOptions } from '../../lib/auth';
 
 interface DashboardProps {
   propertiesCount: number;
@@ -11,7 +11,11 @@ interface DashboardProps {
 }
 
 export default async function DashboardPage() {
-  // Načteme data z databáze
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    // případně přesměrování nebo chybová hláška
+  }
+
   const propertiesCount = await prisma.property.count();
   const tenantsCount = await prisma.tenant.count();
   const unpaidPaymentsCount = await prisma.payment.count({
