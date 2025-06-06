@@ -40,7 +40,8 @@ export default function LeaseDetailPage() {
 
   useEffect(() => {
     if (!leaseId) return;
-    fetch(`/api/leases/${leaseId}`)
+    const origin = window.location.origin;
+    fetch(`${origin}/api/leases/${leaseId}`)
       .then((res) => res.json())
       .then((data: LeaseDetail) => setLease(data));
   }, [leaseId]);
@@ -48,7 +49,8 @@ export default function LeaseDetailPage() {
   const addPayment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!lease) return;
-    const res = await fetch('/api/payments', {
+    const origin = window.location.origin;
+    const res = await fetch(`${origin}/api/payments`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -67,7 +69,8 @@ export default function LeaseDetailPage() {
   const addInvoice = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!lease) return;
-    const res = await fetch('/api/invoices', {
+    const origin = window.location.origin;
+    const res = await fetch(`${origin}/api/invoices`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
