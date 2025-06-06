@@ -24,13 +24,15 @@ export default function CreateLeasePage() {
   const router = useRouter();
 
   const fetchTenants = async () => {
-    const res = await fetch('/api/tenants');
+    const origin = window.location.origin;
+    const res = await fetch(`${origin}/api/tenants`);
     const data: Tenant[] = await res.json();
     setTenants(data.map((t) => ({ id: t.id, label: t.name })));
   };
 
   const fetchUnits = async () => {
-    const res = await fetch('/api/units');
+    const origin = window.location.origin;
+    const res = await fetch(`${origin}/api/units`);
     const data: (Unit & { property: { name: string } })[] = await res.json();
     setUnits(data.map((u) => ({ id: u.id, label: `${u.name} (${u.property.name})` })));
   };
@@ -42,7 +44,8 @@ export default function CreateLeasePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await fetch('/api/leases', {
+    const origin = window.location.origin;
+    await fetch(`${origin}/api/leases`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
