@@ -15,7 +15,8 @@ export default function TenantsPage() {
   const [form, setForm] = useState<TenantForm>({ name: '', contact: '' });
 
   const fetchTenants = async () => {
-    const res = await fetch('/api/tenants');
+    const origin = window.location.origin;
+    const res = await fetch(`${origin}/api/tenants`);
     const data: Tenant[] = await res.json();
     setTenants(data);
   };
@@ -26,7 +27,8 @@ export default function TenantsPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await fetch('/api/tenants', {
+    const origin = window.location.origin;
+    await fetch(`${origin}/api/tenants`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(form),
@@ -39,7 +41,6 @@ export default function TenantsPage() {
     <div>
       <h1 className="text-3xl font-bold mb-6">Nájemníci</h1>
 
-      {/* Formulář pro přidání nájemníka */}
       <form onSubmit={handleSubmit} className="mb-6 flex gap-4">
         <input
           type="text"
@@ -65,7 +66,6 @@ export default function TenantsPage() {
         </button>
       </form>
 
-      {/* Tabulka existujících nájemníků */}
       <table className="w-full bg-white rounded shadow">
         <thead className="bg-gray-100">
           <tr>
