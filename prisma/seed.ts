@@ -9,7 +9,7 @@ async function main() {
   const salt = await bcrypt.genSalt(10);
   const hash = await bcrypt.hash('password', salt);
 
-  // Vytvoříme dva uživatele s rolemi
+  // Vytvoříme dva uživatele s rolemi OWNER a MANAGER
   const user1 = await prisma.user.create({
     data: {
       name: 'Alice Majitel',
@@ -27,7 +27,7 @@ async function main() {
     },
   });
 
-  // Dvě nemovitosti
+  // Vytvoříme dvě nemovitosti pro Alice
   const prop1 = await prisma.property.create({
     data: {
       name: 'Byt Praha 1',
@@ -43,7 +43,7 @@ async function main() {
     },
   });
 
-  // Několik jednotek
+  // Vytvoříme několik jednotek
   const unit1 = await prisma.unit.create({
     data: {
       name: 'Byt 1A',
@@ -69,7 +69,7 @@ async function main() {
     },
   });
 
-  // Dva nájemníci
+  // Vytvoříme nájemníky
   const tenant1 = await prisma.tenant.create({
     data: { name: 'Jan Novák', contact: 'jan.novak@example.com' },
   });
@@ -77,7 +77,7 @@ async function main() {
     data: { name: 'ABC s.r.o.', contact: 'info@abc.cz' },
   });
 
-  // Dvě smlouvy
+  // Vytvoříme smlouvy
   const lease1 = await prisma.lease.create({
     data: {
       unitId: unit1.id,
@@ -97,25 +97,25 @@ async function main() {
     },
   });
 
-  // Platby
-  await prisma.payment.createMany({
-    data: [
-      {
-        leaseId: lease1.id,
-        amount: 12000,
-        dueDate: new Date('2024-06-01'),
-        status: 'PAID',
-      },
-      {
-        leaseId: lease2.id,
-        amount: 25000,
-        dueDate: new Date('2024-06-01'),
-        status: 'UNPAID',
-      },
-    ],
+  // Vytvoříme platby (jednotlivě místo createMany)
+  await prisma.payment.create({
+    data: {
+      leaseId: lease1.id,
+      amount: 12000,
+      dueDate: new Date('2024-06-01'),
+      status: 'PAID',
+    },
+  });
+  await prisma.payment.create({
+    data: {
+      leaseId: lease2.id,
+      amount: 25000,
+      dueDate: new Date('2024-06-01'),
+      status: 'UNPAID',
+    },
   });
 
-  // Jedna hlášená závada
+  // Vytvoříme hlášenou závadu
   await prisma.maintenance.create({
     data: {
       unitId: unit2.id,
