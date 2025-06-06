@@ -17,7 +17,8 @@ export default function LeasesPage() {
   const [leases, setLeases] = useState<LeaseWithRelations[]>([]);
 
   useEffect(() => {
-    fetch('/api/leases')
+    const origin = window.location.origin;
+    fetch(`${origin}/api/leases`)
       .then((res) => res.json())
       .then((data: LeaseWithRelations[]) => setLeases(data));
   }, []);
@@ -70,4 +71,3 @@ export default function LeasesPage() {
     </div>
   );
 }
-
