@@ -1,5 +1,6 @@
 // app/maintenance/page.tsx
 
+export const dynamic = "force-dynamic";
 import { prisma } from '../../lib/prisma';
 import { Maintenance } from '@prisma/client';
 
