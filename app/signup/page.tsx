@@ -3,6 +3,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link           from 'next/link'
 
 export default function SignUpPage() {
   const [name,     setName]     = useState('')
@@ -10,14 +11,12 @@ export default function SignUpPage() {
   const [password, setPassword] = useState('')
   const [loading,  setLoading]  = useState(false)
   const [message,  setMessage]  = useState<string | null>(null)
-
   const router = useRouter()
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setMessage(null)
-
     try {
       const res  = await fetch('/api/signup', {
         method: 'POST',
@@ -27,19 +26,14 @@ export default function SignUpPage() {
       const body = await res.json()
 
       if (!res.ok) {
-        // Chyba z API (status >= 400)
-        setMessage('Chyba: ' + (body.error ?? 'Neznámá chyba'))
+        setMessage(body.error || 'Neznámá chyba při registraci.')
       } else {
-        // Úspěch
-        setMessage(body.message ?? 'Registrace proběhla úspěšně!')
-        // Pauza, aby uživatel viděl potvrzení
-        setTimeout(() => {
-          router.replace('/signin')
-        }, 1000)
+        setMessage(body.message)
+        setTimeout(() => router.replace('/signin'), 1000)
       }
     } catch (err) {
-      console.error('Signup unexpected error', err)
-      setMessage('Neočekávaná chyba při registraci.')
+      console.error(err)
+      setMessage('Neočekávaná chyba.')
     } finally {
       setLoading(false)
     }
@@ -47,20 +41,13 @@ export default function SignUpPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-      <form
-        onSubmit={handleSignUp}
-        className="p-8 bg-white rounded shadow-md w-full max-w-md"
-      >
+      <form onSubmit={handleSignUp} className="p-8 bg-white rounded shadow-md w-full max-w-md">
         <h1 className="text-2xl mb-4">Registrace</h1>
 
         {message && (
-          <div
-            className={`mb-4 p-2 rounded ${
-              message.startsWith('Chyba')
-                ? 'bg-red-100 text-red-700'
-                : 'bg-green-100 text-green-700'
-            }`}
-          >
+          <div className={`mb-4 p-2 rounded ${
+            message.startsWith('Chyba') ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
+          }`}>
             {message}
           </div>
         )}
@@ -70,7 +57,7 @@ export default function SignUpPage() {
           <input
             type="text"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={e => setName(e.target.value)}
             required
             className="mt-1 p-2 w-full border rounded"
           />
@@ -81,7 +68,7 @@ export default function SignUpPage() {
           <input
             type="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={e => setEmail(e.target.value)}
             required
             className="mt-1 p-2 w-full border rounded"
           />
@@ -92,7 +79,7 @@ export default function SignUpPage() {
           <input
             type="password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={e => setPassword(e.target.value)}
             required
             className="mt-1 p-2 w-full border rounded"
           />
@@ -105,8 +92,14 @@ export default function SignUpPage() {
         >
           {loading ? 'Probíhá…' : 'Registrovat se'}
         </button>
+
+        <p className="mt-4 text-center text-sm">
+          Už máte účet?{' '}
+          <Link href="/signin">
+            <a className="text-blue-600 hover:underline">Přihlásit se</a>
+          </Link>
+        </p>
       </form>
     </div>
   )
 }
-
