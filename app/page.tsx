@@ -1,32 +1,37 @@
 // app/page.tsx
+'use client'
 
-import { supabase } from '../lib/supabaseClient'
+import { useSession } from '@supabase/auth-helpers-react'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { useEffect } from 'react'
 
-export default async function Page() {
-  // 1) Načteme všechny záznamy z tabulky Property
-  const { data, error } = await supabase.from('Property').select('*')
+export default function HomePage() {
+  const session = useSession()
+  const router = useRouter()
 
-  // 2) Vypíšeme je do konzole (v terminálu, kde běží `npm run dev`)
-  console.log('Supabase Property rows:', data, 'Error:', error)
+  // Pokud už je přihlášený, přesměrujeme na dashboard
+  useEffect(() => {
+    if (session) {
+      router.replace('/dashboard')
+    }
+  }, [session, router])
 
-  // 3) Vrátíme jednoduchou UI pro kontrolu
   return (
-    <main style={{ padding: '2rem', fontFamily: 'sans-serif' }}>
-      <h1>Supabase – seznam nemovitostí</h1>
-      {error && <p style={{ color: 'red' }}>Chyba: {error.message}</p>}
-      {!error && (
-        <ul>
-          {data && data.length > 0 ? (
-            data.map((prop: any) => (
-              <li key={prop.id}>
-                <strong>{prop.name}</strong> – {prop.address}
-              </li>
-            ))
-          ) : (
-            <li>(v tabulce `Property` zatím žádná data)</li>
-          )}
-        </ul>
-      )}
-    </main>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
+      <h1 className="text-4xl font-bold mb-8">Správa nájmů</h1>
+      <div className="space-x-4">
+        <Link href="/signin">
+          <button className="px-6 py-3 bg-blue-600 text-white rounded hover:bg-blue-700">
+            Přihlásit se
+          </button>
+        </Link>
+        <Link href="/signup">
+          <button className="px-6 py-3 bg-green-600 text-white rounded hover:bg-green-700">
+            Zaregistrovat
+          </button>
+        </Link>
+      </div>
+    </div>
   )
 }
