@@ -1,26 +1,38 @@
 // app/api/users/update/route.ts
 
-import { NextResponse } from 'next/server';
-// Soubor je v /app/api/users/update/route.ts, takže k lib/prisma dojdeme čtyřmi úrovněmi nahoru:
-import { prisma } from '../../../../lib/prisma';
+import { NextResponse } from 'next/server'
+import { supabaseAdmin } from '../../../../../lib/supabaseAdmin'
 
 interface Body {
-  id: number;
-  name?: string;
-  email?: string;
-  role?: string;
+  id: string | number
+  name?: string
+  email?: string
+  role?: string
 }
 
-// PUT /api/users/update – aktualizuje uživatele podle id
-export async function PUT(request: Request) {
-  const { id, name, email, role } = (await request.json()) as Body;
-  const updatedUser = await prisma.user.update({
-    where: { id },
-    data: {
-      ...(name !== undefined && { name }),
+export async function PATCH(request: Request) {
+  // 1) Přečteme JSON z těla requestu
+  const { id, name, email, role } = (await request.json()) as Body
+
+  // 2) Přetypujeme id na string (prisma i Supabase očekávají string/UUID)
+  const idStr = String(id)
+
+  // 3) Provedeme update přes supabaseAdmin (server-side client)
+  const { data, error } = await supabaseAdmin
+    .from('User')
+    .update({
+      ...(name  !== undefined && { name }),
       ...(email !== undefined && { email }),
-      ...(role !== undefined && { role }),
-    },
-  });
-  return NextResponse.json(updatedUser);
+      ...(role  !== undefined && { role }),
+    })
+    .eq('id', idStr)
+    .single()
+
+  // 4) Ošetření chyby
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+
+  // 5) Vrátíme aktualizovaný záznam
+  return NextResponse.json(data)
 }
