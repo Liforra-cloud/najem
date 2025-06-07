@@ -1,3 +1,4 @@
+// components/layout/Sidebar.tsx
 'use client'
 
 import Link from 'next/link'
@@ -6,23 +7,27 @@ import { useSession } from '@supabase/auth-helpers-react'
 import { supabase } from '../../lib/supabaseClient'
 
 const navItems = [
-  { href: '/dashboard', label: 'Dashboard' },
-  { href: '/properties', label: 'Nemovitosti' },
-  { href: '/units', label: 'Jednotky' },
-  { href: '/tenants', label: 'Nájemníci' },
-  { href: '/leases', label: 'Smlouvy' },
-  { href: '/payments', label: 'Platby' },
-  { href: '/invoices', label: 'Faktury' },
-  { href: '/maintenance', label: 'Údržba' },
-  { href: '/settings', label: 'Nastavení' },
+  { href: '/dashboard',    label: 'Dashboard' },
+  { href: '/properties',   label: 'Nemovitosti' },
+  { href: '/units',        label: 'Jednotky' },
+  { href: '/tenants',      label: 'Nájemníci' },
+  { href: '/leases',       label: 'Smlouvy' },
+  { href: '/payments',     label: 'Platby' },
+  { href: '/invoices',     label: 'Faktury' },
+  { href: '/maintenance',  label: 'Údržba' },
+  { href: '/settings',     label: 'Nastavení' },
 ]
 
 export default function Sidebar() {
-  const { data: session } = useSession()
-  const pathname       = usePathname()
-  const router         = useRouter()
+  // useSession vrací Session | null
+  const session = useSession()
+  const pathname = usePathname()
+  const router = useRouter()
 
-  if (!session) return null
+  if (!session) {
+    // Pokud není přihlášený, neukazujeme sidebar
+    return null
+  }
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
@@ -34,7 +39,9 @@ export default function Sidebar() {
       <div>
         <div className="mb-6">
           <h2 className="text-xl font-bold">Správa nájmů</h2>
-          <p className="text-sm text-gray-600">Vítejte, {session.user.email}</p>
+          <p className="text-sm text-gray-600">
+            Vítejte, {session.user?.email}
+          </p>
         </div>
         <nav>
           <ul className="space-y-2">
