@@ -1,53 +1,27 @@
 // app/properties/page.tsx
+export const dynamic = 'force-dynamic'
 
-import React from 'react'
-import { supabaseAdmin } from '../../lib/supabaseAdmin'
+import { prisma } from '../../lib/prisma'
 
 export default async function PropertiesPage() {
-  // 1) Načteme data přímo pomocí service‐role klienta
-  const { data: properties, error } = await supabaseAdmin
-    .from('Property')
-    .select('*')
+  // Spočítáme celkový počet jednotek
+  const unitsCount = await prisma.unit.count()
 
-  // 2) Pokud nastala chyba, vypíšeme ji uživateli
-  if (error) {
-    return (
-      <main className="p-6">
-        <h1 className="text-2xl font-bold mb-4">Nemovitosti</h1>
-        <div className="text-red-600">Chyba: {error.message}</div>
-      </main>
-    )
-  }
-
-  // 3) Jinak vykreslíme tabulku
   return (
-    <main className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Nemovitosti</h1>
-      <table className="w-full border-collapse">
-        <thead>
-          <tr>
-            <th className="border p-2 text-left">Název</th>
-            <th className="border p-2 text-left">Adresa</th>
-          </tr>
-        </thead>
-        <tbody>
-          {properties && properties.length > 0 ? (
-            properties.map((prop) => (
-              <tr key={prop.id}>
-                <td className="border p-2">{prop.name}</td>
-                <td className="border p-2">{prop.address}</td>
-              </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan={2} className="border p-2 text-center">
-                Žádné nemovitosti k dispozici.
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
-    </main>
+    <div className="p-6">
+      <h1 className="text-3xl font-bold mb-6">Přehled nemovitostí</h1>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="bg-white p-6 rounded shadow">
+          <h2 className="text-xl font-semibold">Celkem jednotek</h2>
+          <p className="text-4xl mt-2">{unitsCount}</p>
+        </div>
+      </div>
+
+      <p className="text-gray-600">
+        Zatím zde budeme zobrazovat jen celkový počet jednotek.  
+        Do budoucna sem přidáme seznam nemovitostí a detailní přehled jednotek.
+      </p>
+    </div>
   )
 }
-
