@@ -1,24 +1,30 @@
-// app/signup/page.tsx
 'use client'
 
 import { useState } from 'react'
-import { supabase } from '../../lib/supabaseClient'
+import { supabase }   from '../../lib/supabaseClient'
 
 export default function SignUpPage() {
-  const [email, setEmail]     = useState('')
-  const [loading, setLoading] = useState(false)
-  const [message, setMessage] = useState<string | null>(null)
+  const [email,    setEmail]    = useState('')
+  const [password, setPassword] = useState('')
+  const [loading,  setLoading]  = useState(false)
+  const [message,  setMessage]  = useState<string | null>(null)
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setMessage(null)
 
-    const { data, error } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.origin + '/dashboard' } })
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+    })
+
     if (error) {
-      setMessage('Chyba při odeslání magic-link: ' + error.message)
+      setMessage('Chyba při registraci: ' + error.message)
     } else {
-      setMessage('Zkontroluj svůj e-mail – poslali jsme ti odkaz pro přihlášení.')
+      setMessage('Registrace proběhla. Teď se můžete přihlásit.')
+      setEmail('')
+      setPassword('')
     }
 
     setLoading(false)
@@ -27,13 +33,11 @@ export default function SignUpPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
       <form onSubmit={handleSignUp} className="p-8 bg-white rounded shadow-md w-full max-w-md">
-        <h1 className="text-2xl font-bold mb-4">Registrace</h1>
+        <h1 className="text-2xl mb-4">Registrace</h1>
         {message && (
-          <div
-            className={`mb-4 p-2 rounded ${
-              message.startsWith('Chyba') ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
-            }`}
-          >
+          <div className={`mb-4 p-2 rounded ${
+            message.startsWith('Chyba') ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
+          }`}>
             {message}
           </div>
         )}
@@ -45,7 +49,18 @@ export default function SignUpPage() {
             onChange={e => setEmail(e.target.value)}
             required
             className="mt-1 p-2 w-full border rounded"
-            placeholder="tvůj@email.cz"
+          />
+        </label>
+        <label className="block mb-2">
+          Heslo
+          <input
+            type="password"
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            required
+            className="mt-1 p-2 w-full border rounded"
+            minLength={6}
+            placeholder="Minimálně 6 znaků"
           />
         </label>
         <button
