@@ -1,21 +1,31 @@
 // app/api/units/route.ts
 
-import { NextResponse } from 'next/server';
-import { prisma } from '../../../lib/prisma';
+import { NextResponse } from 'next/server'
+import { supabaseAdmin } from '../../../lib/supabaseAdmin'
 
-// GET /api/units – vrátí všechny jednotky (včetně názvu nemovitosti)
+// GET /api/units – seznam všech jednotek
 export async function GET() {
-  const units = await prisma.unit.findMany({
-    include: { property: { select: { name: true } } },
-  });
-  return NextResponse.json(units);
+  const { data, error } = await supabaseAdmin
+    .from('Unit')
+    .select('*')
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+  return NextResponse.json(data)
 }
 
 // POST /api/units – vytvoří novou jednotku
 export async function POST(request: Request) {
-  const { name, size, floor, propertyId } = await request.json();
-  const newUnit = await prisma.unit.create({
-    data: { name, size, floor, propertyId },
-  });
-  return NextResponse.json(newUnit);
+  const { name, size, floor, propertyId } = await request.json()
+
+  const { data, error } = await supabaseAdmin
+    .from('Unit')
+    .insert([{ name, size, floor, propertyId }])
+    .single()
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+  return NextResponse.json(data, { status: 201 })
 }

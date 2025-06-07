@@ -1,98 +1,53 @@
 // app/properties/page.tsx
 
-'use client';
+import React from 'react'
+import { supabaseAdmin } from '../../lib/supabaseAdmin'
 
-import { useEffect, useState } from 'react';
-import { Property } from '@prisma/client';
-import { useRouter } from 'next/navigation';
+export default async function PropertiesPage() {
+  // 1) Načteme data přímo pomocí service‐role klienta
+  const { data: properties, error } = await supabaseAdmin
+    .from('Property')
+    .select('*')
 
-interface PropertyForm {
-  name: string;
-  address: string;
-}
+  // 2) Pokud nastala chyba, vypíšeme ji uživateli
+  if (error) {
+    return (
+      <main className="p-6">
+        <h1 className="text-2xl font-bold mb-4">Nemovitosti</h1>
+        <div className="text-red-600">Chyba: {error.message}</div>
+      </main>
+    )
+  }
 
-export default function PropertiesPage() {
-  const [properties, setProperties] = useState<Property[]>([]);
-  const [form, setForm] = useState<PropertyForm>({ name: '', address: '' });
-  const router = useRouter();
-
-  const fetchProperties = async () => {
-    const origin = window.location.origin;
-    const res = await fetch(`${origin}/api/properties`);
-    const data = await res.json();
-    setProperties(data);
-  };
-
-  useEffect(() => {
-    fetchProperties();
-  }, []);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const origin = window.location.origin;
-    await fetch(`${origin}/api/properties`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
-    });
-    setForm({ name: '', address: '' });
-    fetchProperties();
-  };
-
+  // 3) Jinak vykreslíme tabulku
   return (
-    <div>
-      <h1 className="text-3xl font-bold mb-6">Nemovitosti</h1>
-
-      <form onSubmit={handleSubmit} className="mb-6 flex gap-4">
-        <input
-          type="text"
-          placeholder="Název"
-          value={form.name}
-          onChange={(e) => setForm({ ...form, name: e.target.value })}
-          required
-          className="border border-gray-300 rounded p-2 flex-1"
-        />
-        <input
-          type="text"
-          placeholder="Adresa"
-          value={form.address}
-          onChange={(e) => setForm({ ...form, address: e.target.value })}
-          required
-          className="border border-gray-300 rounded p-2 flex-1"
-        />
-        <button
-          type="submit"
-          className="bg-green-600 text-white px-4 rounded hover:bg-green-700"
-        >
-          Přidat
-        </button>
-      </form>
-
-      <table className="w-full bg-white rounded shadow">
-        <thead className="bg-gray-100">
+    <main className="p-6">
+      <h1 className="text-2xl font-bold mb-4">Nemovitosti</h1>
+      <table className="w-full border-collapse">
+        <thead>
           <tr>
-            <th className="p-3 text-left">Název</th>
-            <th className="p-3 text-left">Adresa</th>
-            <th className="p-3 text-left">Akce</th>
+            <th className="border p-2 text-left">Název</th>
+            <th className="border p-2 text-left">Adresa</th>
           </tr>
         </thead>
         <tbody>
-          {properties.map((prop) => (
-            <tr key={prop.id} className="border-t">
-              <td className="p-3">{prop.name}</td>
-              <td className="p-3">{prop.address}</td>
-              <td className="p-3 space-x-2">
-                <button
-                  onClick={() => router.push(`/properties/${prop.id}`)}
-                  className="text-blue-600 hover:underline"
-                >
-                  Detail
-                </button>
+          {properties && properties.length > 0 ? (
+            properties.map((prop) => (
+              <tr key={prop.id}>
+                <td className="border p-2">{prop.name}</td>
+                <td className="border p-2">{prop.address}</td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan={2} className="border p-2 text-center">
+                Žádné nemovitosti k dispozici.
               </td>
             </tr>
-          ))}
+          )}
         </tbody>
       </table>
-    </div>
-  );
+    </main>
+  )
 }
+
