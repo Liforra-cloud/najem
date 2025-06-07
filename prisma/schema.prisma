@@ -10,9 +10,9 @@ generator client {
 }
 
 model User {
-  id             Int        @id @default(autoincrement())
+  id             String    @id @default(uuid())
   name           String
-  email          String     @unique
+  email          String    @unique
   role           String
   hashedPassword String?
   properties     Property[]
@@ -24,18 +24,18 @@ model Property {
   id        Int      @id @default(autoincrement())
   name      String
   address   String
-  ownerId   Int
+  ownerId   String
   owner     User     @relation(fields: [ownerId], references: [id])
   units     Unit[]
 }
 
 model Unit {
-  id           Int        @id @default(autoincrement())
+  id           Int           @id @default(autoincrement())
   name         String
   size         String
   floor        Int
   propertyId   Int
-  property     Property   @relation(fields: [propertyId], references: [id])
+  property     Property      @relation(fields: [propertyId], references: [id])
   leases       Lease[]
   maintenances Maintenance[]
 }
@@ -73,9 +73,9 @@ model Invoice {
   id        Int       @id @default(autoincrement())
   leaseId   Int
   amount    Int
-  issuedAt  DateTime   @default(now())
+  issuedAt  DateTime  @default(now())
   pdfPath   String?
-  lease     Lease      @relation(fields: [leaseId], references: [id])
+  lease     Lease     @relation(fields: [leaseId], references: [id])
 }
 
 model Maintenance {
@@ -91,26 +91,26 @@ model Maintenance {
 model Session {
   id           String   @id @default(cuid())
   sessionToken String   @unique
-  userId       Int
+  userId       String
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id])
 }
 
 model Account {
-  id                 Int     @id @default(autoincrement())
-  userId             Int
-  providerType       String
-  providerId         String
-  providerAccountId  String  @unique
-  refreshToken       String?
-  accessToken        String?
+  id                    Int     @id @default(autoincrement())
+  userId                String
+  providerType          String
+  providerId            String
+  providerAccountId     String  @unique
+  refreshToken          String?
+  accessToken           String?
   refreshTokenExpiresIn Int?
-  expiresAt          Int?
-  tokenType          String?
-  scope              String?
-  idToken            String?
-  sessionState       String?
-  user               User    @relation(fields: [userId], references: [id])
+  expiresAt             Int?
+  tokenType             String?
+  scope                 String?
+  idToken               String?
+  sessionState          String?
+  user                  User    @relation(fields: [userId], references: [id])
 }
 
 model VerificationToken {
@@ -119,4 +119,3 @@ model VerificationToken {
   expires    DateTime
   @@unique([identifier, token])
 }
-
