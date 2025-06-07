@@ -1,30 +1,35 @@
+// app/signup/page.tsx
 'use client'
 
 import { useState } from 'react'
-import { supabase }   from '../../lib/supabaseClient'
+import { useRouter } from 'next/navigation'
 
 export default function SignUpPage() {
   const [email,    setEmail]    = useState('')
   const [password, setPassword] = useState('')
+  const [name,     setName]     = useState('')
   const [loading,  setLoading]  = useState(false)
   const [message,  setMessage]  = useState<string | null>(null)
+  const router = useRouter()
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setMessage(null)
 
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
+    const res = await fetch('/api/signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password, name }),
     })
+    const body = await res.json()
 
-    if (error) {
-      setMessage('Chyba při registraci: ' + error.message)
+    if (!res.ok) {
+      setMessage('Chyba: ' + body.error)
     } else {
-      setMessage('Registrace proběhla. Teď se můžete přihlásit.')
-      setEmail('')
-      setPassword('')
+      setMessage('Registrace úspěšná! Nyní se můžete přihlásit.')
+      // volitelně přesměrujte:
+      router.push('/signin')
     }
 
     setLoading(false)
@@ -42,6 +47,16 @@ export default function SignUpPage() {
           </div>
         )}
         <label className="block mb-2">
+          Jméno
+          <input
+            type="text"
+            value={name}
+            onChange={e => setName(e.target.value)}
+            required
+            className="mt-1 p-2 w-full border rounded"
+          />
+        </label>
+        <label className="block mb-2">
           E-mail
           <input
             type="email"
@@ -58,8 +73,8 @@ export default function SignUpPage() {
             value={password}
             onChange={e => setPassword(e.target.value)}
             required
-            className="mt-1 p-2 w-full border rounded"
             minLength={6}
+            className="mt-1 p-2 w-full border rounded"
             placeholder="Minimálně 6 znaků"
           />
         </label>
@@ -68,7 +83,7 @@ export default function SignUpPage() {
           disabled={loading}
           className="mt-4 w-full p-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
         >
-          {loading ? 'Probíhá…' : 'Registrovat se'}
+          {loading ? 'Probíhá registrace…' : 'Registrovat se'}
         </button>
       </form>
     </div>
