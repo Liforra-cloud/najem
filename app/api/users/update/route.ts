@@ -1,7 +1,7 @@
 // app/api/users/update/route.ts
 
 import { NextResponse } from 'next/server'
-import { supabaseAdmin } from '../../../../../lib/supabaseAdmin'
+import { supabaseAdmin } from '../../../../lib/supabaseAdmin'
 
 interface Body {
   id: string | number
