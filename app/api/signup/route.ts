@@ -1,4 +1,5 @@
 // app/api/signup/route.ts
+console.log('SERVICE ROLE KEY prefix:', process.env.SUPABASE_SERVICE_ROLE_KEY?.slice(0,8))
 
 import { NextResponse } from 'next/server'
 import { supabase } from '../../../lib/supabaseClient'
