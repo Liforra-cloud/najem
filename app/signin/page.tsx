@@ -3,7 +3,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabaseClient'
+import { supabase } from '../../lib/supabaseClient'
 
 export default function SignInPage() {
   const [email, setEmail] = useState('')
@@ -16,11 +16,13 @@ export default function SignInPage() {
     setLoading(true)
     setMessage(null)
 
-    const { error } = await supabase.auth.signInWithOtp({ email })
+    const { data, error } = await supabase.auth.signInWithOtp({ email })
     if (error) {
       setMessage('Chyba při odesílání e-mailu: ' + error.message)
     } else {
       setMessage('Zkontroluj svůj e-mail, poslali jsme ti přihlašovací odkaz.')
+      // můžete přesměrovat např. na úvodní stránku:
+      // router.push('/')
     }
 
     setLoading(false)
@@ -36,7 +38,9 @@ export default function SignInPage() {
         {message && (
           <div
             className={`p-2 mb-4 text-sm ${
-              message.startsWith('Chyba') ? 'text-red-700 bg-red-100' : 'text-green-700 bg-green-100'
+              message.startsWith('Chyba')
+                ? 'text-red-700 bg-red-100'
+                : 'text-green-700 bg-green-100'
             } rounded`}
           >
             {message}

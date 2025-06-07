@@ -1,6 +1,6 @@
 // app/page.tsx
 
-import { supabase } from '@/lib/supabaseClient'
+import { supabase } from '../lib/supabaseClient'
 
 export default async function Page() {
   // 1) Načteme všechny záznamy z tabulky Property
