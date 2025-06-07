@@ -1,16 +1,31 @@
 // app/api/signup/route.ts
-
 import { NextResponse } from 'next/server'
 import { supabase }      from '../../../lib/supabaseClient'
 import { supabaseAdmin } from '../../../lib/supabaseAdmin'
 
 export async function POST(request: Request) {
   try {
-    const { email, password, name } = await request.json()
+    const { name, email, password } = await request.json()
 
-    // Debug: vraťme prefix service-role key (není vidět v browser console,
-    // ale ve Vercel Logs nebo v next dev terminálu)
-    console.log('SR-KEY prefix:', process.env.SUPABASE_SERVICE_ROLE_KEY?.slice(0,8))
+    // 0) Zkontrolujeme, zda e-mail už nemáme v naší vlastní tabulce
+    const { data: exists, error: existErr } = await supabaseAdmin
+      .from('User')
+      .select('id', { count: 'exact' })
+      .eq('email', email)
+      .maybeSingle()
+
+    if (existErr) {
+      return NextResponse.json(
+        { error: 'Chyba při kontrole existence uživatele: ' + existErr.message },
+        { status: 500 }
+      )
+    }
+    if (exists) {
+      return NextResponse.json(
+        { error: 'Uživatel s tímto e-mailem už existuje.' },
+        { status: 400 }
+      )
+    }
 
     // 1) Registrace v Supabase Auth
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
@@ -19,7 +34,7 @@ export async function POST(request: Request) {
     })
     if (signUpError) {
       return NextResponse.json(
-        { step: 'auth.signUp', message: signUpError.message, status: signUpError.status },
+        { error: 'Auth error: ' + signUpError.message },
         { status: 400 }
       )
     }
@@ -27,32 +42,31 @@ export async function POST(request: Request) {
     const userId = signUpData.user?.id
     if (!userId) {
       return NextResponse.json(
-        { step: 'noUserId', message: 'Nepodařilo se načíst user.id' },
+        { error: 'Nepodařilo se získat ID uživatele' },
         { status: 500 }
       )
     }
 
-    // 2) Vložení do vlastní tabulky pomocí service-role klienta
-    const { data: insertData, error: insertError } = await supabaseAdmin
+    // 2) Vložíme ho i do vlastní tabulky
+    const { error: insertError } = await supabaseAdmin
       .from('User')
       .insert([{ id: userId, name, email, role: 'USER' }])
-      .select() // vrátíme vložený řádek
-      .single()
-
     if (insertError) {
       return NextResponse.json(
-        { step: 'admin.insert', message: insertError.message, details: insertError },
+        { error: 'DB error: ' + insertError.message },
         { status: 500 }
       )
     }
 
-    // 3) Úspěch
-    return NextResponse.json({ message: 'Registrace úspěšná', user: insertData }, { status: 201 })
-  } catch (err) {
-    // 4) Libovolná neočekávaná chyba
-    console.error('Unexpected error in /api/signup:', err)
+    // 3) Všechno OK
     return NextResponse.json(
-      { step: 'unexpected', message: (err as Error).message },
+      { message: 'Registrace proběhla úspěšně.' },
+      { status: 201 }
+    )
+  } catch (err) {
+    console.error(err)
+    return NextResponse.json(
+      { error: 'Neočekávaná chyba.' },
       { status: 500 }
     )
   }
